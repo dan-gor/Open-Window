@@ -2,6 +2,8 @@ C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c)
 HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h libc/*.h)
 OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o}
 
+CFLAGS = -g -ffreestanding -Wall -Wextra -fno-exceptions -m32
+
 # Rule is run by default
 os-image.bin: boot/bootsect.bin kernel.bin
 	cat $^ > os-image.bin
@@ -26,7 +28,7 @@ debug: os-image.bin kernel.elf
 
 
 %.o: ${HEADERS}
-	gcc ${CFLAGS} -ffreestanding -c $< -o $@
+	gcc ${CFLAGS} -c $< -o $@
 
 
 ${HEADERS}:
