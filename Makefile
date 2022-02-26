@@ -1,6 +1,6 @@
 C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c)
 HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h libc/*.h)
-OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o}
+OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o} 
 
 CFLAGS = -g -ffreestanding -Wall -Wextra -fno-exceptions -m32
 
@@ -8,16 +8,13 @@ CFLAGS = -g -ffreestanding -Wall -Wextra -fno-exceptions -m32
 os-image.bin: boot/bootsect.bin kernel.bin
 	cat $^ > os-image.bin
 
-
 kernel.bin: boot/kernel_entry.o ${OBJ}
-	i386-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
+	i386-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary --ignore-unresolved-symbol _GLOBAL_OFFSET_TABLE_
 
 # Used for debugging
 kernel.elf: boot/kernel_entry.o ${OBJ}
-	i386-elf-ld -o $@ -Ttext 0x1000 $^
+	i386-elf-ld -o $@ -Ttext 0x1000 $^ 
 
-
-${OBJ}:
 run: os-image.bin
 	qemu-system-i386 -fda os-image.bin
 
@@ -26,17 +23,12 @@ debug: os-image.bin kernel.elf
 	qemu-system-i386 -s -fda os-image.bin -d guest_errors,int &
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
-
-%.o: ${HEADERS}
+%.o: %.c ${HEADERS}
 	gcc ${CFLAGS} -c $< -o $@
 
-
-${HEADERS}:
 %.o: %.asm
 	nasm $< -f elf -o $@
 
-
-%.asm:
 %.bin: %.asm
 	nasm $< -f bin -o $@
 
